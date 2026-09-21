@@ -72,6 +72,103 @@
       to   { transform: translateY(-11px) rotate(3deg); }
     }
 
+    /* ---------- Mariquitas que solo cruzan el jardín (adorno) ---------- */
+    .mariquitas {
+      position: fixed;
+      inset: 0;
+      z-index: 880;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .vuelo {
+      position: absolute;
+      top: calc(var(--y) * 1%);
+      left: 0;
+      width: max-content;
+      animation: mariquita-cruzar var(--dur, 30s) linear var(--delay, 0s) infinite;
+    }
+    .vuelo--vuelta { animation-direction: reverse; }
+    .vuelo svg {
+      display: block;
+      width: var(--s, 24px);
+      height: var(--s, 24px);
+      filter: drop-shadow(0 4px 9px rgba(0, 0, 0, .55));
+      animation: mariquita-ondular var(--bob, 3.4s) ease-in-out infinite alternate;
+    }
+    @keyframes mariquita-cruzar {
+      from { transform: translateX(-14vw); }
+      to   { transform: translateX(114vw); }
+    }
+    @keyframes mariquita-ondular {
+      from { transform: translateY(-15px) rotate(-14deg); }
+      to   { transform: translateY(15px) rotate(14deg); }
+    }
+
+    /* ---------- La mariquita que se puede tocar ---------- */
+    .mariquita {
+      --s: clamp(46px, 7.6vmin, 76px);
+      position: fixed;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--y) * 1%);
+      width: var(--s);
+      height: var(--s);
+      margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: none;
+      cursor: pointer;
+      z-index: 950;
+      -webkit-tap-highlight-color: transparent;
+
+      opacity: 0;
+      scale: .3;
+      visibility: hidden;
+      transition: opacity 1s ease, scale 1s cubic-bezier(.2, 1.35, .4, 1), visibility 0s;
+      animation: mariquita-flotar 4.2s ease-in-out infinite alternate;
+    }
+    .mariquita.visible {
+      opacity: 1;
+      scale: 1;
+      visibility: visible;
+    }
+    /* halo que late, para que se note que esta guarda algo distinto */
+    .mariquita::after {
+      content: '';
+      position: absolute;
+      inset: -20%;
+      z-index: -1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 64, 44, .38), transparent 66%);
+      animation: mariquita-latido 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .mariquita svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 12px rgba(255, 64, 44, .55));
+      transition: transform .7s cubic-bezier(.2, .8, .2, 1), filter .3s ease;
+    }
+    .mariquita:hover svg,
+    .mariquita:focus-visible svg {
+      transform: rotate(-18deg) scale(1.14);
+      filter: drop-shadow(0 0 22px rgba(255, 84, 62, .95));
+    }
+    .mariquita:active svg { transform: rotate(-18deg) scale(.96); }
+    .mariquita:focus-visible {
+      outline: 2px solid var(--crema);
+      outline-offset: 4px;
+    }
+    @keyframes mariquita-flotar {
+      from { transform: translateY(0) rotate(-5deg); }
+      to   { transform: translateY(-13px) rotate(5deg); }
+    }
+    @keyframes mariquita-latido {
+      0%, 100% { opacity: .22; transform: scale(.85); }
+      50%      { opacity: .68; transform: scale(1.16); }
+    }
+
     /* ---------- Ventana del mensaje ---------- */
     .carta-fondo {
       position: fixed;
@@ -182,6 +279,33 @@
     }
     .carta__cerrar:hover { background: rgba(255, 200, 58, .22); transform: rotate(90deg); }
     .carta__cerrar:focus-visible { outline: 2px solid var(--crema); outline-offset: 3px; }
+
+    /* ---------- La carta cuando la abre la mariquita (en rojo) ---------- */
+    .carta-fondo--roja .carta {
+      background:
+        radial-gradient(120% 70% at 50% 0%, rgba(255, 74, 52, .17), transparent 60%),
+        linear-gradient(165deg, #2d0b08 0%, #150403 100%);
+      border-color: rgba(255, 96, 72, .5);
+      box-shadow:
+        0 0 0 7px rgba(255, 74, 52, .07),
+        0 30px 80px rgba(0, 0, 0, .78),
+        0 0 70px rgba(214, 40, 28, .3);
+    }
+    .carta-fondo--roja .carta__flor {
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .6)) drop-shadow(0 0 14px rgba(255, 74, 52, .6));
+    }
+    .carta-fondo--roja .carta__titulo {
+      color: #ffb6a8;
+      text-shadow: 0 0 24px rgba(255, 74, 52, .4);
+    }
+    .carta-fondo--roja .carta__firma { color: #ff8068; }
+    .carta-fondo--roja .carta__cuerpo { scrollbar-color: rgba(255, 96, 72, .5) transparent; }
+    .carta-fondo--roja .carta__cerrar {
+      border-color: rgba(255, 96, 72, .45);
+      background: rgba(255, 96, 72, .1);
+      color: #ffb6a8;
+    }
+    .carta-fondo--roja .carta__cerrar:hover { background: rgba(255, 96, 72, .24); }
 
     /* ---------- Panel de música ---------- */
     .musica {
@@ -309,11 +433,18 @@
     @media (prefers-reduced-motion: reduce) {
       .girasol,
       .girasol svg,
+      .mariquita,
+      .mariquita svg,
+      .mariquita::after,
+      .vuelo,
+      .vuelo svg,
       .carta,
       .carta-fondo,
       .carta__flor,
       .musica__btn .eq i,
       .pista { animation: none !important; transition-duration: .01s !important; }
+      /* sin animación no tiene sentido que las de adorno se queden amontonadas */
+      .mariquitas { display: none; }
     }
     </style>
     <link rel="icon" href="img/flowers.png" type="image/png">
@@ -724,10 +855,45 @@
             <circle cx="66.48" cy="50.85" r="1.20"/>
           </g>
         </symbol>
+
+        <radialGradient id="mq-rojo" cx="36%" cy="28%" r="78%">
+          <stop offset="0%" stop-color="#ff5545"/>
+          <stop offset="55%" stop-color="#df2219"/>
+          <stop offset="100%" stop-color="#9e110c"/>
+        </radialGradient>
+        <symbol id="mariquita" viewBox="0 0 100 100">
+          <!-- antenas -->
+          <path d="M42 21 C37 12, 32 8, 27 5.5" fill="none" stroke="#150f0b" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M58 21 C63 12, 68 8, 73 5.5" fill="none" stroke="#150f0b" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="26.2" cy="5" r="3.1" fill="#150f0b"/>
+          <circle cx="73.8" cy="5" r="3.1" fill="#150f0b"/>
+          <!-- patitas -->
+          <path d="M25 43 L10 34 M22 59 L6 58 M26 73 L13 84" fill="none" stroke="#150f0b" stroke-width="2.9" stroke-linecap="round"/>
+          <path d="M75 43 L90 34 M78 59 L94 58 M74 73 L87 84" fill="none" stroke="#150f0b" stroke-width="2.9" stroke-linecap="round"/>
+          <!-- cabeza -->
+          <ellipse cx="50" cy="27" rx="19" ry="14.5" fill="#150f0b"/>
+          <circle cx="42.5" cy="25" r="3.3" fill="#fff" opacity=".92"/>
+          <circle cx="57.5" cy="25" r="3.3" fill="#fff" opacity=".92"/>
+          <!-- caparazón -->
+          <ellipse cx="50" cy="58" rx="31" ry="33" fill="url(#mq-rojo)" stroke="#7e0f0a" stroke-width="1"/>
+          <path d="M50 26 L50 90" stroke="#150f0b" stroke-width="3.4" stroke-linecap="round"/>
+          <!-- manchas -->
+          <circle cx="34" cy="45" r="6.5" fill="#150f0b"/>
+          <circle cx="66" cy="45" r="6.5" fill="#150f0b"/>
+          <circle cx="30.5" cy="66" r="5.3" fill="#150f0b"/>
+          <circle cx="69.5" cy="66" r="5.3" fill="#150f0b"/>
+          <circle cx="42" cy="81" r="4.1" fill="#150f0b"/>
+          <circle cx="58" cy="81" r="4.1" fill="#150f0b"/>
+          <!-- brillo -->
+          <ellipse cx="36" cy="41" rx="8.5" ry="5" fill="#fff" opacity=".2" transform="rotate(-30 36 41)"/>
+        </symbol>
       </defs>
     </svg>
 
-    <!-- Girasoles flotantes (los crea el script) -->
+    <!-- Mariquitas de adorno que cruzan el jardín (las crea el script) -->
+    <div class="mariquitas" id="mariquitas" aria-hidden="true"></div>
+
+    <!-- Girasoles y la mariquita que se toca (los crea el script) -->
     <div id="girasoles"></div>
 
     <!-- Ventana del mensaje -->
@@ -767,7 +933,7 @@
     const GIRASOLES = [
       { // Girasol 1
         titulo: "Gracias",
-        texto: `Gracias por tu amistad durante todo este tiempo, por tu confianza, por cada momento de alegria, por cada abrazo, por compartir tantas cosas conmigo.
+        texto: `Gracias por todo este tiempo, Jessi. Por tu confianza, por cada momento de alegria, por cada abrazo, por compartir tantas cosas conmigo.
 
                 `,
         firma: "",
@@ -814,6 +980,29 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
       }
     ];
 
+    /* ---------- 1.5) La mariquita ----------
+       Aparece en el centro después de los girasoles, con un halo rojo que late.
+       Es el último mensaje, el que ella va a encontrar al final.
+       Mismos campos que arriba. Ponla en false si algún día no la quieres. */
+    const MOSTRAR_MARIQUITA = true;
+
+    const MARIQUITA = {
+      titulo: "Lo que me recordó a ti",
+      texto: `Dicen que cuando una mariquita se te posa en la mano tienes que pedir un deseo antes de que vuele.
+
+Yo ya pedí el mío hace como un mes, sin darme cuenta.
+
+Siempre me gustó que Marinette sea así: torpe, que se traba, que se pone nerviosa y que nunca encuentra las palabras justo cuando más falta le hacen. Y que aun así, cuando de verdad importa, sea la más valiente de todas. Nunca tuvo que dejar de ser ella para ser extraordinaria.
+
+Algo parecido me pasa contigo: a veces no encuentro las palabras, pero tengo clarísimo lo que quiero decir.
+
+Ladybug lanza su amuleto al aire cuando todo parece perdido, y cae justo lo que hacía falta. Yo creo que la suerte no cae del cielo, se reconoce cuando aparece. Y yo te reconocí.
+
+Todavía no sé qué somos, y no tengo ninguna prisa por ponerle nombre. Solo sé que este mes hablando contigo ha sido lo mejor que me ha pasado en mucho tiempo, y que ver tu nombre en la pantalla me arregla el día.`,
+      firma: "— Y si algún día se te acaba la suerte, yo te presto la mía",
+      x: 50, y: 30
+    };
+
     /* ---------- 2) Las canciones (6 en total) ----------
        archivo : nombre del mp3 (debe existir en la carpeta indicada abajo)
        titulo  : el nombre que se muestra debajo del panel
@@ -823,11 +1012,11 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
     const CANCION_FONDO = { archivo: "Floricienta.mp3", titulo: "Floricienta - flores amarillas" };
 
     const CANCIONES = [
-      { archivo: "cancion1.mp3", titulo: "Acuerdate de mi" },
-      { archivo: "cancion2.mp3", titulo: "Pareja del año" },
-      { archivo: "cancion3.mp3", titulo: "Terapia" },
-      { archivo: "cancion4.mp3", titulo: "Faltas tú" },
-      { archivo: "cancion5.mp3", titulo: "Cuando nadie ve" }
+      { archivo: "cancion1.mpeg", titulo: "Acuerdate de mi" },
+      { archivo: "cancion2.mpeg", titulo: "Pareja del año" },
+      { archivo: "cancion3.mpeg", titulo: "Terapia" },
+      { archivo: "cancion4.mpeg", titulo: "Faltas tú" },
+      { archivo: "cancion5.mpeg", titulo: "Cuando nadie ve" }
     ];
 
     /* Carpeta donde están los 6 mp3, relativa a este archivo.
@@ -856,13 +1045,13 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
       var SVG_NS = 'http://www.w3.org/2000/svg';
       var POS_DEFECTO = [[9, 20], [91, 18], [20, 37], [76, 35], [10, 53], [90, 51]];
 
-      function icono(clase) {
+      function icono(clase, simbolo) {
         var svg = document.createElementNS(SVG_NS, 'svg');
         svg.setAttribute('viewBox', '0 0 100 100');
         svg.setAttribute('aria-hidden', 'true');
         if (clase) svg.setAttribute('class', clase);
         var use = document.createElementNS(SVG_NS, 'use');
-        use.setAttribute('href', '#girasol');
+        use.setAttribute('href', simbolo || '#girasol');
         svg.appendChild(use);
         return svg;
       }
@@ -873,6 +1062,7 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
       var tituloEl = $('#carta-titulo');
       var cuerpo = $('.carta__cuerpo', fondo);
       var firmaEl = $('.carta__firma', fondo);
+      var florUse = $('.carta__flor use', fondo);
       var btnCerrar = $('.carta__cerrar', fondo);
       var pista = $('#pista');
       var ultimoBoton = null;
@@ -894,12 +1084,14 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
         pista.classList.remove('ver');
       }
 
-      function abrir(i, boton) {
-        var g = GIRASOLES[i];
+      /* g = el mensaje; roja = true solo para la mariquita (cambia el color y el icono) */
+      function abrir(g, boton, roja) {
         if (!g) return;
         clearTimeout(timerCierre);
         ocultarPista();
 
+        fondo.classList.toggle('carta-fondo--roja', !!roja);
+        florUse.setAttribute('href', roja ? '#mariquita' : '#girasol');
         tituloEl.textContent = g.titulo || '';
         cuerpo.textContent = '';
         parrafos(g.texto).forEach(function (p) { cuerpo.appendChild(p); });
@@ -956,16 +1148,62 @@ Pero sobre todo, lo que mas me gusta es tu mirada esos ojos hermosos que aveces 
         b.style.setProperty('--dur', (4.6 + (i % 3) * 0.7) + 's');
         b.style.setProperty('--delay', (-i * 0.9) + 's');
         b.appendChild(icono());
-        b.addEventListener('click', function () { abrir(i, b); });
+        b.addEventListener('click', function () { abrir(GIRASOLES[i], b, false); });
         contenedor.appendChild(b);
         /* aparecen cuando las flores terminan de florecer */
         setTimeout(function () { b.classList.add('visible'); }, reduce ? 0 : 4200 + i * 320);
       });
 
-      /* pista suave, solo al principio */
+      /* ---------------- La mariquita ---------------- */
+      var hayMariquita = typeof MOSTRAR_MARIQUITA !== 'undefined' && MOSTRAR_MARIQUITA &&
+                         typeof MARIQUITA === 'object' && MARIQUITA;
+
+      if (hayMariquita) {
+        var mb = document.createElement('button');
+        mb.type = 'button';
+        mb.className = 'mariquita';
+        mb.title = MARIQUITA.titulo || '';
+        mb.setAttribute('aria-label', 'Abrir mensaje: ' + (MARIQUITA.titulo || 'la mariquita'));
+        mb.style.setProperty('--x', isFinite(MARIQUITA.x) && MARIQUITA.x !== null ? MARIQUITA.x : 50);
+        mb.style.setProperty('--y', isFinite(MARIQUITA.y) && MARIQUITA.y !== null ? MARIQUITA.y : 30);
+        mb.appendChild(icono(null, '#mariquita'));
+        mb.addEventListener('click', function () { abrir(MARIQUITA, mb, true); });
+        contenedor.appendChild(mb);
+        /* llega la última, cuando los seis girasoles ya están */
+        setTimeout(function () { mb.classList.add('visible'); }, reduce ? 0 : 7400);
+      }
+
+      /* mariquitas de adorno: cruzan el jardín despacio, de lado a lado */
+      var cielo = $('#mariquitas');
+      [
+        { y: 14, s: 20, dur: 34, delay: -6,  bob: 3.1, vuelta: false },
+        { y: 44, s: 27, dur: 46, delay: -22, bob: 4.2, vuelta: true  },
+        { y: 68, s: 17, dur: 39, delay: -13, bob: 2.7, vuelta: false },
+        { y: 84, s: 23, dur: 52, delay: -31, bob: 3.8, vuelta: true  }
+      ].forEach(function (m) {
+        var v = document.createElement('div');
+        v.className = 'vuelo' + (m.vuelta ? ' vuelo--vuelta' : '');
+        v.style.setProperty('--y', m.y);
+        v.style.setProperty('--s', m.s + 'px');
+        v.style.setProperty('--dur', m.dur + 's');
+        v.style.setProperty('--delay', m.delay + 's'); /* negativo: ya vienen en camino */
+        v.style.setProperty('--bob', m.bob + 's');
+        v.appendChild(icono(null, '#mariquita'));
+        cielo.appendChild(v);
+      });
+
+      /* pistas suaves, solo al principio: primero los girasoles, luego la mariquita */
       pistaTimer = setTimeout(function () {
         pista.classList.add('ver');
-        pistaTimer = setTimeout(ocultarPista, 12000);
+        pistaTimer = setTimeout(function () {
+          pista.classList.remove('ver');
+          if (!hayMariquita) return;
+          pistaTimer = setTimeout(function () {
+            pista.textContent = 'La mariquita guarda el último';
+            pista.classList.add('ver');
+            pistaTimer = setTimeout(ocultarPista, 11000);
+          }, 1500);
+        }, 11000);
       }, reduce ? 0 : 6500);
 
       /* ---------------- Música ---------------- */
